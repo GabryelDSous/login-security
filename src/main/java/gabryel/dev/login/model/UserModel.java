@@ -1,6 +1,6 @@
 package gabryel.dev.login.model;
 
-import gabryel.dev.login.model.saveenum.Roles;
+import gabryel.dev.login.saveenum.Roles;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
