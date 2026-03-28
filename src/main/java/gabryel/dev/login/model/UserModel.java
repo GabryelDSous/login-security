@@ -72,17 +72,4 @@ public class UserModel implements Serializable, UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof UserModel)) return false;
-        UserModel u = (UserModel) obj;
-        return id.equals(u.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
-    }
 }
