@@ -1,10 +1,11 @@
 package gabryel.dev.login.service;
 
 import gabryel.dev.login.config.TokenConfig;
-import gabryel.dev.login.dto.request.LoginUserRequest;
-import gabryel.dev.login.dto.request.RegisterUserRequest;
+import gabryel.dev.login.dto.request.*;
+import gabryel.dev.login.dto.response.ListUserResponse;
 import gabryel.dev.login.dto.response.LoginUserResponse;
 import gabryel.dev.login.dto.response.RegisterUserResponse;
+import gabryel.dev.login.dto.response.UpdateNameEmailUserResponse;
 import gabryel.dev.login.mapper.UserMapper;
 import gabryel.dev.login.model.UserModel;
 import gabryel.dev.login.repository.UserRepository;
@@ -12,13 +13,15 @@ import gabryel.dev.login.saveenum.Roles;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -35,6 +38,7 @@ public class UserService {
         this.authenticationManager = authenticationManager;
     }
 
+    @Transactional
     public RegisterUserResponse registerUser(RegisterUserRequest userRequest) {
         if (userRepository.findByEmail(userRequest.email()).isPresent())
             throw new UsernameNotFoundException("User not found");
@@ -45,9 +49,10 @@ public class UserService {
         return UserMapper.toDTO(userModel);
     }
 
+    @Transactional
     public RegisterUserResponse registerAdmin(RegisterUserRequest userRequest) {
         if (userRepository.findByEmail(userRequest.email()).isPresent())
-            throw new UsernameNotFoundException("User not found");
+            throw new EntityNotFoundException("User not found");
         UserModel userModel = UserMapper.toModel(userRequest);
         userModel.setPassword(passwordEncoder.encode(userRequest.password()));
         userModel.setRole(Roles.ADMIN);
@@ -61,5 +66,42 @@ public class UserService {
         UserModel userModel = (UserModel) authentication.getPrincipal();
         String token = tokenConfig.generateToken(userModel);
         return new LoginUserResponse(token);
+    }
+
+    @Transactional
+    public void deleteUser(DeleteUserRequest userRequest) {
+        UserModel user = userRepository.findByEmail(userRequest.email())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        if (!passwordEncoder.matches(userRequest.password(), user.getPassword()))
+            throw new BadCredentialsException("Invalid password");
+        userRepository.delete(user);
+    }
+
+    @Transactional
+    public UpdateNameEmailUserResponse update(UUID id, UpdateNameEmailUserRequest userRequest) {
+        UserModel userModel = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        if (!passwordEncoder.matches(userRequest.password(), userModel.getPassword()))
+            throw new BadCredentialsException("Invalid password");
+        userModel.setEmail(userRequest.email());
+        userModel.setName(userRequest.name());
+        return UserMapper.toUpdateNameEmailUser(userModel);
+    }
+
+    public List<ListUserResponse> listAllUsers() {
+        List<UserModel> userModels = userRepository.findAll();
+        if (userModels.isEmpty())
+            throw new EntityNotFoundException("Have no Users");
+        return userModels.stream().map(UserMapper::toListAllUser).toList();
+    }
+
+    @Transactional
+    public void updatePassword(UpdatePasswordUserRequest userRequest) {
+        UserModel userModel = userRepository.findByEmail(userRequest.email())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        if (!passwordEncoder.matches(userRequest.currentPass(), userModel.getPassword()) ||
+            userRequest.currentPass().equals(userRequest.newPass()))
+            throw new BadCredentialsException("Invalid password");
+        userModel.setPassword(passwordEncoder.encode(userRequest.newPass()));
     }
 }
