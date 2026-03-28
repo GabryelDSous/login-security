@@ -1,6 +1,7 @@
 package gabryel.dev.login.mapper;
 
 import gabryel.dev.login.dto.request.RegisterUserRequest;
+import gabryel.dev.login.dto.response.ListUserResponse;
 import gabryel.dev.login.dto.response.RegisterUserResponse;
 import gabryel.dev.login.dto.response.UpdateNameEmailUserResponse;
 import gabryel.dev.login.model.UserModel;
@@ -24,6 +25,15 @@ public class UserMapper {
         return new UpdateNameEmailUserResponse(
                 userModel.getName(),
                 userModel.getEmail()
+        );
+    }
+
+    public static ListUserResponse toListAllUser(UserModel userModel) {
+        return new ListUserResponse(
+                userModel.getId(),
+                userModel.getName(),
+                userModel.getEmail(),
+                userModel.getRole()
         );
     }
 }

@@ -5,6 +5,7 @@ import gabryel.dev.login.dto.request.DeleteUserRequest;
 import gabryel.dev.login.dto.request.LoginUserRequest;
 import gabryel.dev.login.dto.request.RegisterUserRequest;
 import gabryel.dev.login.dto.request.UpdateNameEmailUserRequest;
+import gabryel.dev.login.dto.response.ListUserResponse;
 import gabryel.dev.login.dto.response.LoginUserResponse;
 import gabryel.dev.login.dto.response.RegisterUserResponse;
 import gabryel.dev.login.dto.response.UpdateNameEmailUserResponse;
@@ -22,6 +23,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -87,5 +89,12 @@ public class UserService {
         userModel.setEmail(userRequest.email());
         userModel.setName(userRequest.name());
         return UserMapper.toUpdateNameEmailUser(userModel);
+    }
+
+    public List<ListUserResponse> listAllUsers() {
+        List<UserModel> userModels = userRepository.findAll();
+        if (userModels.isEmpty())
+            throw new EntityNotFoundException("Have no Users");
+        return userModels.stream().map(UserMapper::toListAllUser).toList();
     }
 }
