@@ -1,10 +1,7 @@
 package gabryel.dev.login.service;
 
 import gabryel.dev.login.config.TokenConfig;
-import gabryel.dev.login.dto.request.DeleteUserRequest;
-import gabryel.dev.login.dto.request.LoginUserRequest;
-import gabryel.dev.login.dto.request.RegisterUserRequest;
-import gabryel.dev.login.dto.request.UpdateNameEmailUserRequest;
+import gabryel.dev.login.dto.request.*;
 import gabryel.dev.login.dto.response.ListUserResponse;
 import gabryel.dev.login.dto.response.LoginUserResponse;
 import gabryel.dev.login.dto.response.RegisterUserResponse;
@@ -96,5 +93,15 @@ public class UserService {
         if (userModels.isEmpty())
             throw new EntityNotFoundException("Have no Users");
         return userModels.stream().map(UserMapper::toListAllUser).toList();
+    }
+
+    @Transactional
+    public void updatePassword(UpdatePasswordUserRequest userRequest) {
+        UserModel userModel = userRepository.findByEmail(userRequest.email())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        if (!passwordEncoder.matches(userRequest.currentPass(), userModel.getPassword()) ||
+            userRequest.currentPass().equals(userRequest.newPass()))
+            throw new BadCredentialsException("Invalid password");
+        userModel.setPassword(passwordEncoder.encode(userRequest.newPass()));
     }
 }

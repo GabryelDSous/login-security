@@ -1,9 +1,6 @@
 package gabryel.dev.login.controller;
 
-import gabryel.dev.login.dto.request.DeleteUserRequest;
-import gabryel.dev.login.dto.request.LoginUserRequest;
-import gabryel.dev.login.dto.request.RegisterUserRequest;
-import gabryel.dev.login.dto.request.UpdateNameEmailUserRequest;
+import gabryel.dev.login.dto.request.*;
 import gabryel.dev.login.dto.response.ListUserResponse;
 import gabryel.dev.login.dto.response.LoginUserResponse;
 import gabryel.dev.login.dto.response.RegisterUserResponse;
@@ -58,5 +55,11 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<ListUserResponse>> listAll() {
         return ResponseEntity.ok(userService.listAllUsers());
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<String> updatePassword(@RequestBody @Valid UpdatePasswordUserRequest userRequest) {
+        userService.updatePassword(userRequest);
+        return ResponseEntity.ok("Password successfully updated");
     }
 }
