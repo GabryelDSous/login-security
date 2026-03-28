@@ -20,12 +20,16 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
-    public ResponseEntity<RegisterUserResponse> register(@RequestBody @Valid RegisterUserRequest userRequest) {
+    @PostMapping("/register")
+    public ResponseEntity<RegisterUserResponse> registerUser(@RequestBody @Valid RegisterUserRequest userRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerUser(userRequest));
     }
+    @PostMapping("/register-admin")
+    public ResponseEntity<RegisterUserResponse> registerAdmin(@RequestBody @Valid RegisterUserRequest userRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerAdmin(userRequest));
+    }
 
-    @GetMapping
+    @PostMapping("/login")
     public ResponseEntity<LoginUserResponse> login(@RequestBody @Valid LoginUserRequest userRequest) {
         return ResponseEntity.ok(userService.loginUser(userRequest));
     }

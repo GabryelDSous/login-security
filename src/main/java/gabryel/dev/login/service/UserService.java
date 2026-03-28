@@ -35,13 +35,23 @@ public class UserService {
         this.authenticationManager = authenticationManager;
     }
 
-    @Transactional
     public RegisterUserResponse registerUser(RegisterUserRequest userRequest) {
         if (userRepository.findByEmail(userRequest.email()).isPresent())
             throw new UsernameNotFoundException("User not found");
         UserModel userModel = UserMapper.toModel(userRequest);
         userModel.setPassword(passwordEncoder.encode(userRequest.password()));
+        userModel.setRole(Roles.USER);
+        userRepository.save(userModel);
+        return UserMapper.toDTO(userModel);
+    }
+
+    public RegisterUserResponse registerAdmin(RegisterUserRequest userRequest) {
+        if (userRepository.findByEmail(userRequest.email()).isPresent())
+            throw new UsernameNotFoundException("User not found");
+        UserModel userModel = UserMapper.toModel(userRequest);
+        userModel.setPassword(passwordEncoder.encode(userRequest.password()));
         userModel.setRole(Roles.ADMIN);
+        userRepository.save(userModel);
         return UserMapper.toDTO(userModel);
     }
 
