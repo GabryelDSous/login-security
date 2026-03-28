@@ -1,5 +1,6 @@
 package gabryel.dev.login.controller;
 
+import gabryel.dev.login.dto.request.DeleteUserRequest;
 import gabryel.dev.login.dto.request.LoginUserRequest;
 import gabryel.dev.login.dto.request.RegisterUserRequest;
 import gabryel.dev.login.dto.response.LoginUserResponse;
@@ -32,5 +33,11 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<LoginUserResponse> login(@RequestBody @Valid LoginUserRequest userRequest) {
         return ResponseEntity.ok(userService.loginUser(userRequest));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<String> delete(@RequestBody @Valid DeleteUserRequest userRequest) {
+        userService.deleteUser(userRequest);
+        return ResponseEntity.ok("Successfully deleted");
     }
 }

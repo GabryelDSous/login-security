@@ -1,6 +1,7 @@
 package gabryel.dev.login.service;
 
 import gabryel.dev.login.config.TokenConfig;
+import gabryel.dev.login.dto.request.DeleteUserRequest;
 import gabryel.dev.login.dto.request.LoginUserRequest;
 import gabryel.dev.login.dto.request.RegisterUserRequest;
 import gabryel.dev.login.dto.response.LoginUserResponse;
@@ -12,6 +13,7 @@ import gabryel.dev.login.saveenum.Roles;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,6 +37,7 @@ public class UserService {
         this.authenticationManager = authenticationManager;
     }
 
+    @Transactional
     public RegisterUserResponse registerUser(RegisterUserRequest userRequest) {
         if (userRepository.findByEmail(userRequest.email()).isPresent())
             throw new UsernameNotFoundException("User not found");
@@ -45,6 +48,7 @@ public class UserService {
         return UserMapper.toDTO(userModel);
     }
 
+    @Transactional
     public RegisterUserResponse registerAdmin(RegisterUserRequest userRequest) {
         if (userRepository.findByEmail(userRequest.email()).isPresent())
             throw new UsernameNotFoundException("User not found");
@@ -62,4 +66,14 @@ public class UserService {
         String token = tokenConfig.generateToken(userModel);
         return new LoginUserResponse(token);
     }
+
+    @Transactional
+    public void deleteUser(DeleteUserRequest userRequest) {
+        UserModel user = userRepository.findByEmail(userRequest.email())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        if (!passwordEncoder.matches(userRequest.password(), user.getPassword()))
+            throw new BadCredentialsException("Invalid password");
+        userRepository.delete(user);
+    }
+    
 }
