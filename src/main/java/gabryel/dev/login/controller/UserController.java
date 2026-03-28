@@ -3,13 +3,17 @@ package gabryel.dev.login.controller;
 import gabryel.dev.login.dto.request.DeleteUserRequest;
 import gabryel.dev.login.dto.request.LoginUserRequest;
 import gabryel.dev.login.dto.request.RegisterUserRequest;
+import gabryel.dev.login.dto.request.UpdateNameEmailUserRequest;
 import gabryel.dev.login.dto.response.LoginUserResponse;
 import gabryel.dev.login.dto.response.RegisterUserResponse;
+import gabryel.dev.login.dto.response.UpdateNameEmailUserResponse;
 import gabryel.dev.login.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
@@ -39,5 +43,10 @@ public class UserController {
     public ResponseEntity<String> delete(@RequestBody @Valid DeleteUserRequest userRequest) {
         userService.deleteUser(userRequest);
         return ResponseEntity.ok("Successfully deleted");
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UpdateNameEmailUserResponse> updateNameEmailUser(@PathVariable(name = "id") UUID id, @RequestBody @Valid UpdateNameEmailUserRequest userRequest) {
+        return ResponseEntity.ok(userService.update(id, userRequest));
     }
 }

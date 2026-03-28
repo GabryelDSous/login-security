@@ -4,8 +4,10 @@ import gabryel.dev.login.config.TokenConfig;
 import gabryel.dev.login.dto.request.DeleteUserRequest;
 import gabryel.dev.login.dto.request.LoginUserRequest;
 import gabryel.dev.login.dto.request.RegisterUserRequest;
+import gabryel.dev.login.dto.request.UpdateNameEmailUserRequest;
 import gabryel.dev.login.dto.response.LoginUserResponse;
 import gabryel.dev.login.dto.response.RegisterUserResponse;
+import gabryel.dev.login.dto.response.UpdateNameEmailUserResponse;
 import gabryel.dev.login.mapper.UserMapper;
 import gabryel.dev.login.model.UserModel;
 import gabryel.dev.login.repository.UserRepository;
@@ -20,7 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -51,7 +53,7 @@ public class UserService {
     @Transactional
     public RegisterUserResponse registerAdmin(RegisterUserRequest userRequest) {
         if (userRepository.findByEmail(userRequest.email()).isPresent())
-            throw new UsernameNotFoundException("User not found");
+            throw new EntityNotFoundException("User not found");
         UserModel userModel = UserMapper.toModel(userRequest);
         userModel.setPassword(passwordEncoder.encode(userRequest.password()));
         userModel.setRole(Roles.ADMIN);
@@ -75,5 +77,15 @@ public class UserService {
             throw new BadCredentialsException("Invalid password");
         userRepository.delete(user);
     }
-    
+
+    @Transactional
+    public UpdateNameEmailUserResponse update(UUID id, UpdateNameEmailUserRequest userRequest) {
+        UserModel userModel = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        if (!passwordEncoder.matches(userRequest.password(), userModel.getPassword()))
+            throw new BadCredentialsException("Invalid password");
+        userModel.setEmail(userRequest.email());
+        userModel.setName(userRequest.name());
+        return UserMapper.toUpdateNameEmailUser(userModel);
+    }
 }
