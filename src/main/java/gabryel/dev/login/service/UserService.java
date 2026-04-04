@@ -10,6 +10,7 @@ import gabryel.dev.login.mapper.UserMapper;
 import gabryel.dev.login.model.UserModel;
 import gabryel.dev.login.repository.UserRepository;
 import gabryel.dev.login.saveenum.Roles;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,7 +42,7 @@ public class UserService {
     @Transactional
     public RegisterUserResponse registerUser(RegisterUserRequest userRequest) {
         if (userRepository.findByEmail(userRequest.email()).isPresent())
-            throw new UsernameNotFoundException("User not found");
+            throw new EntityExistsException("User not found");
         UserModel userModel = UserMapper.toModel(userRequest);
         userModel.setPassword(passwordEncoder.encode(userRequest.password()));
         userModel.setRole(Roles.USER);
@@ -52,7 +53,7 @@ public class UserService {
     @Transactional
     public RegisterUserResponse registerAdmin(RegisterUserRequest userRequest) {
         if (userRepository.findByEmail(userRequest.email()).isPresent())
-            throw new EntityNotFoundException("User not found");
+            throw new EntityExistsException("User not found");
         UserModel userModel = UserMapper.toModel(userRequest);
         userModel.setPassword(passwordEncoder.encode(userRequest.password()));
         userModel.setRole(Roles.ADMIN);
