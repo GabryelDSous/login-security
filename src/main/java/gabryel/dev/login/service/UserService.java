@@ -42,7 +42,7 @@ public class UserService {
     @Transactional
     public RegisterUserResponse registerUser(RegisterUserRequest userRequest) {
         if (userRepository.findByEmail(userRequest.email()).isPresent())
-            throw new EntityExistsException("User not found");
+            throw new EntityExistsException("User already exists");
         UserModel userModel = UserMapper.toModel(userRequest);
         userModel.setPassword(passwordEncoder.encode(userRequest.password()));
         userModel.setRole(Roles.USER);
@@ -53,7 +53,7 @@ public class UserService {
     @Transactional
     public RegisterUserResponse registerAdmin(RegisterUserRequest userRequest) {
         if (userRepository.findByEmail(userRequest.email()).isPresent())
-            throw new EntityExistsException("User not found");
+            throw new EntityExistsException("User already exists");
         UserModel userModel = UserMapper.toModel(userRequest);
         userModel.setPassword(passwordEncoder.encode(userRequest.password()));
         userModel.setRole(Roles.ADMIN);
